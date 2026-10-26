@@ -45,9 +45,6 @@ p, li { hyphens: manual; }
 a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
 .byline { font-family: var(--sans); color: var(--muted); font-size: .95rem; margin: 0 0 1.6rem; }
 .byline b { color: var(--fg); font-weight: 600; }
-.abstract { background: var(--soft); border-left: 4px solid var(--accent); padding: 14px 20px; margin: 0 0 2rem; }
-.abstract h2 { border: 0; margin: 0 0 .4rem; padding: 0; font-size: 1rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-.abstract p { margin: .5rem 0; }
 .repro-note, .credits { font-family: var(--sans); font-size: .78rem; line-height: 1.45; color: var(--muted); margin: 0 0 2rem; }
 .credits { margin: 2.5rem 0 1rem; }
 .credits p { margin: 0; }
@@ -126,7 +123,7 @@ footer { font-family: var(--sans); font-size: .85rem; color: var(--muted); borde
   main { max-width: none; padding: 0; }
   nav.toc { display: none; }
   h2 { margin-top: 1.6rem; }
-  .abstract h2, .abstract + h2, h2.no-break { break-before: auto; }
+  h2.no-break { break-before: auto; }
   h2, h3, h4 { break-after: avoid; }
   figure { break-inside: avoid; margin: 1rem 0; }
   figure.wide, .table-wrap.wide { width: auto; margin-left: 0; }
@@ -142,7 +139,6 @@ footer { font-family: var(--sans); font-size: .85rem; color: var(--muted); borde
   table { font-size: 8pt; }
   table.top5 td { font-size: 7.4pt; }
   a { color: var(--accent); }
-  .abstract { break-inside: avoid; }
 }
 </style>
 </head>
@@ -151,15 +147,8 @@ footer { font-family: var(--sans); font-size: .85rem; color: var(--muted); borde
 
 <header>
   <h1>Project 1: Pre-trained Vision and Vision–Language Models</h1>
-  <p class="byline"><b>Haopeng Chen</b> · October 2026 · Graduate track (Parts 1, 2 and 3)</p>
+  <p class="byline"><b>Haopeng Chen</b> · October 2026</p>
 </header>
-
-<section class="abstract">
-  <h2>Abstract</h2>
-  <p>I study two frozen pre-trained models on COCO photos. With torchvision's ViT-B/16 I show how a 224×224 image becomes 196 patch tokens plus one [CLS] token, check that the learned patch projection is one linear map, and look at the positional embeddings. On 20 images from five ImageNet categories it reaches a strict top-1 accuracy of 17/20, or 19/20 when "notebook" counts as "laptop" (a rule fixed before the run). The errors are two laptops called "notebook" and an upside-down umbrella called "mountain tent".</p>
-  <p>With CLIP ViT-B/32 I re-implement the image–text scoring (normalise, cosine, scale by 100, softmax) and match CLIP's own logits to within 10<sup>−5</sup>. All three prompt templates classify the 20 images correctly and change only the margins (8.80 to 9.77 logits on average). Image embeddings group by category (mean cosine 0.778 within, 0.532 across), but scene and texture also matter.</p>
-  <p>In Part 3, on 12 matched sets of 24 images, CLIP finds the right object for 24/24 images but the right action description for only 18/24 (7/12 sets with both images right). Its action margins are about six times smaller than its object margins. Cropping to the person and the object has little effect (19/24 to 21/24 images, mean margin change +0.0008 with a 95% interval that includes zero).</p>
-</section>
 
 <p class="repro-note"><b>Setup.</b> Models: torchvision <code>vit_b_16</code> (<code>ViT_B_16_Weights.IMAGENET1K_V1</code>) and OpenAI CLIP ViT-B/32 (<code>openai/clip-vit-base-patch32</code>). Preprocessing: ViT resizes to 256, center-crops 224 and uses ImageNet normalisation; CLIP resizes to 224 (bicubic), center-crops 224 and uses CLIP normalisation. Device: forward passes on an NVIDIA RTX 4090, analysis on CPU. Versions: Python 3.12, torch 2.6.0, torchvision 0.21.0, transformers 5.20.2. Data: all images are from COCO 2017 (Flickr photos under Creative Commons licenses).</p>
 
@@ -218,7 +207,7 @@ footer { font-family: var(--sans); font-size: .85rem; color: var(--muted); borde
   <p class="table-caption"><b>Table 1.</b> Mapping from our five categories to ImageNet-1k class indices.</p>
   <table class=""><thead><tr><th>Our category</th><th>ImageNet index</th><th>ImageNet class name</th><th>Accepted under the lenient rule</th></tr></thead><tbody><tr><td>zebra</td><td class="num ">340</td><td>zebra</td><td>same as strict</td></tr><tr><td>banana</td><td class="num ">954</td><td>banana</td><td>same as strict</td></tr><tr><td>pizza</td><td class="num ">963</td><td>pizza</td><td>same as strict</td></tr><tr><td>laptop</td><td class="num ">620</td><td>laptop</td><td>620 laptop or 681 notebook</td></tr><tr><td>umbrella</td><td class="num ">879</td><td>umbrella</td><td>same as strict</td></tr></tbody></table>
 </div>
-<p>Images were preprocessed with the checkpoint's transforms (see the note under the abstract), and probabilities are the softmax over all 1000 logits. Before running the model I fixed the scoring rule. Under the <b>strict</b> rule (main metric) a prediction is correct only if the top-1 index equals the mapped index. ImageNet has two classes for a portable computer, 620 "laptop" and 681 "notebook", so the <b>lenient</b> rule also accepts 681 for laptop images; no other synonyms are allowed. The confusion matrix has the five true categories as rows and the five categories plus "other" (any of the remaining 995 classes) as columns.</p>
+<p>Images were preprocessed with the checkpoint's transforms (see the setup note at the top), and probabilities are the softmax over all 1000 logits. Before running the model I fixed the scoring rule. Under the <b>strict</b> rule (main metric) a prediction is correct only if the top-1 index equals the mapped index. ImageNet has two classes for a portable computer, 620 "laptop" and 681 "notebook", so the <b>lenient</b> rule also accepts 681 for laptop images; no other synonyms are allowed. The confusion matrix has the five true categories as rows and the five categories plus "other" (any of the remaining 995 classes) as columns.</p>
 
 <h4>Top-5 predictions</h4>
 <div class="table-wrap wide" id="tab-top5">
